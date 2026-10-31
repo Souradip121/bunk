@@ -14,3 +14,5 @@ Type classes attended and classes held (and your college's minimum if it isn't 7
 One HTML file, no backend, no login: your numbers stay on your phone. Shareable links work too: `?a=36&t=40&m=75`.
 
 Made by [@souradip.sh](https://www.instagram.com/souradip.sh/). Use it responsibly. Or don't.
+
+Fonts: Oswald, Courier Prime and Archivo Black, under the SIL Open Font License.
