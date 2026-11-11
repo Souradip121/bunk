@@ -1,321 +1,676 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-IN">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bunk calculator · how many classes can you skip?</title>
-<meta name="description" content="Type classes attended and classes held. It tells you how many you can skip and stay at 75%, or how many you must attend in a row to get back. Free, no login.">
-<meta name="theme-color" content="#F7F8F9">
-<meta property="og:title" content="Bunk calculator">
-<meta property="og:description" content="How many classes can you skip and still sit at 75%? One line of maths, done for you.">
-<link rel="preload" href="assets/fonts/oswald.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/courier-prime-400.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="assets/fonts/archivo-black.woff2" as="font" type="font/woff2" crossorigin>
+<title>bunk · how many classes can you skip?</title>
+<meta name="description" content="Put in every subject's attendance and see how many classes you can still skip at 75%, or how many you must attend in a row to get back. Free, no login.">
+<meta name="theme-color" content="#F2EEE5">
+<meta property="og:title" content="bunk · how many classes can you skip?">
+<meta property="og:description" content="Every subject at once. 75%, 80% or 85%. And what each bunk costs you.">
+<link rel="preload" href="assets/fonts/caslon-text.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/caslon-display.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/kalam.woff2" as="font" type="font/woff2" crossorigin>
 <style>
-@font-face { font-family: "Oswald"; src: url("assets/fonts/oswald.woff2") format("woff2"); font-weight: 200 700; font-display: swap; }
-@font-face { font-family: "Courier Prime"; src: url("assets/fonts/courier-prime-400.woff2") format("woff2"); font-weight: 400; font-display: swap; }
-@font-face { font-family: "Courier Prime"; src: url("assets/fonts/courier-prime-700.woff2") format("woff2"); font-weight: 700; font-display: swap; }
-@font-face { font-family: "Archivo Black"; src: url("assets/fonts/archivo-black.woff2") format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Caslon"; src: url(assets/fonts/caslon-text.woff2) format("woff2"); font-weight: 400 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Caslon"; src: url(assets/fonts/caslon-text-italic.woff2) format("woff2"); font-weight: 400 700; font-style: italic; font-display: swap; }
+/* Libre Caslon Text has no ₹, so the display cut lends its rupee to the text face */
+@font-face { font-family: "Caslon Rupee"; src: url(assets/fonts/rupee.woff2) format("woff2"); unicode-range: U+20B9; font-display: swap; }
+@font-face { font-family: "Caslon Display"; src: url(assets/fonts/caslon-display.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "Kalam"; src: url(assets/fonts/kalam.woff2) format("woff2"); font-display: swap; }
 
 :root {
-  --paper: #F7F8F9;
-  --ink: #0D1226;          /* form rules and labels */
-  --navy: #0A1635;         /* the printed title */
-  --carbon: #1E1E21;       /* the big inked number */
-  --plate: #1B1B1E;        /* the button */
-  --typed: #23283A;        /* typewriter values */
-  --violet: #4A20C8;       /* ELIGIBLE stamp ink */
-  --red: #D8141C;          /* SHORTAGE stamp ink */
-  --muted: #646a7c;
-  --desk: #1C2030;
-  --rule: 1.5px;
-  --w: min(100vw, 460px);
+  --paper: #F2EEE5;
+  --rule: #D3DDE6;
+  --margin: #E2A29D;
+  --ink: #1E2B4F;
+  --ink-soft: #4A5677;
+  --chip: #3F5A80;
+  --green: #1F6B47;
+  --green-bg: #DCEADF;
+  --green-line: #79A98C;
+  --red: #B32A2A;
+  --red-bg: #F6DBD7;
+  --red-line: #D37C76;
+  --amber: #8A5A12;
+  --amber-bg: #F3E6CC;
+  --amber-line: #C9A15D;
+  --pencil: #7E8597;
+  --line: #B5C0CB;
+  --track: #D2D7DC;
+  --highlight: #F0C3BC;
+  --desk: #D6DFE9;
+  --ribbon: #446082;
+  --serif: "Caslon", "Caslon Rupee", Georgia, "Times New Roman", serif;
+  --display: "Caslon Display", "Caslon", Georgia, serif;
+  --hand: "Kalam", "Segoe Print", "Comic Sans MS", cursive;
+  --rule-gap: 32px;
+  --margin-x: 26px;
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
 body {
-  margin: 0; min-height: 100svh; background: var(--paper); color: var(--ink);
-  font-family: "Courier Prime", "Courier New", monospace;
-  display: flex; justify-content: center;
+  margin: 0; min-height: 100dvh; background: var(--desk); color: var(--ink);
+  font: 400 18px/1.4 var(--serif); font-variant-numeric: lining-nums;
+  font-variant-ligatures: no-common-ligatures; /* the italic cut puts a swash s_t in liga */
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent;
 }
-::selection { background: rgba(74, 32, 200, .22); color: var(--navy); }
+::selection { background: rgba(63, 90, 128, .2); color: var(--ink); }
+input, button { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus { outline: none; }
+:focus-visible { outline: 2px dashed var(--chip); outline-offset: 3px; border-radius: 6px; }
+[hidden] { display: none !important; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.ticket {
-  position: relative; width: var(--w); min-height: 100svh; background-color: var(--paper);
-  /* paper fibre: a faint procedural turbulence, so the sheet never reads as a flat fill */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .57 0 0 0 0 .62 0 0 0 .07 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
-  padding: 0 0 calc(18px + env(safe-area-inset-bottom));
-  display: flex; flex-direction: column; overflow: hidden;
+/* ---------- the register sheet ---------- */
+.sheet {
+  position: relative; width: min(100%, 460px); min-height: 100dvh; margin: 0 auto;
+  padding: 0 20px 40px calc(var(--margin-x) + 18px);
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(to right, transparent calc(var(--margin-x) - .75px), var(--margin) calc(var(--margin-x) - .75px), var(--margin) calc(var(--margin-x) + .75px), transparent calc(var(--margin-x) + .75px)),
+    repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--rule-gap) - 1px), var(--rule) calc(var(--rule-gap) - 1px), var(--rule) var(--rule-gap));
+  background-position: 0 0, 0 88px;
+  background-size: 100% 100%, 100% 100%;
+  background-repeat: no-repeat, repeat-y;
+  overflow: hidden;
 }
-.band { height: 112px; background: url("assets/guilloche.png") center top / 100% auto no-repeat; margin-bottom: -10px; }
+.sheet::before { /* paper fibre */
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .07; mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='f'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .35  0 0 0 0 .32  0 0 0 0 .27  0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23f)'/></svg>");
+}
+.ribbon { position: absolute; top: 0; right: 22px; width: 18px; height: 46px; color: var(--ribbon); pointer-events: none; }
+@media (min-width: 520px) {
+  body { padding: 28px 0; }
+  .sheet { min-height: calc(100dvh - 56px); border-radius: 10px; box-shadow: 0 24px 60px rgba(30, 43, 79, .18), 0 3px 10px rgba(30, 43, 79, .08); }
+}
 
-header { text-align: center; padding: 0 22px; }
-h1 {
-  margin: 0; font-family: "Oswald", "Arial Narrow", sans-serif; font-weight: 700; text-transform: uppercase;
-  font-size: clamp(28px, 9.6vw, 44px); line-height: 1; letter-spacing: 0; color: var(--navy); white-space: nowrap;
-}
-.sub {
-  margin: 2px 0 0; font-family: "Oswald", sans-serif; font-weight: 500; text-transform: uppercase;
-  font-size: clamp(13px, 4.1vw, 18px); letter-spacing: .15em; color: var(--navy);
-}
+/* ---------- header ---------- */
+.top { position: relative; z-index: 1; display: flex; align-items: center; gap: 12px; height: 88px; padding-right: 30px; }
+.wordmark { font-size: 34px; font-weight: 600; letter-spacing: -.01em; margin: 0; line-height: 1; }
+.top h1.title { flex: 1; min-width: 0; text-align: center; font-size: 22px; font-weight: 600; margin: 0; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.top .back { flex: none; width: 40px; height: 40px; margin-left: -10px; display: grid; place-items: center; border: 0; background: none; border-radius: 50%; color: var(--ink); }
+.top .back svg { width: 22px; height: 22px; }
+.top .spacer { flex: none; width: 30px; }
 
-.sheet { margin: 20px clamp(18px, 7vw, 30px) 0; }
-.form { border: var(--rule) solid var(--ink); }
-.row { display: grid; grid-template-columns: 48% 52%; min-height: 48px; }
-.row + .row { border-top: var(--rule) solid var(--ink); }
-.row label, .row .lbl {
-  border-right: var(--rule) solid var(--ink); padding: 10px 10px 0;
-  font-family: "Oswald", sans-serif; font-weight: 600; font-size: 13.5px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink);
-}
-.row input, .row output {
-  width: 100%; min-width: 0; border: 0; border-radius: 0; background: transparent; padding: 11px 16px 6px;
-  font: 400 22px/1.2 "Courier Prime", "Courier New", monospace; color: var(--typed); caret-color: var(--violet);
-  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: none;
-}
-.row input::-webkit-outer-spin-button, .row input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.row input::placeholder { color: #6b7080; }
-.row input:focus { outline: none; }
-.row:focus-within { background: rgba(74, 32, 200, .055); box-shadow: inset 0 0 0 2px var(--violet); }
-.row:focus-within label { color: var(--violet); }
-.note { min-height: 22px; margin: 6px 2px 0; text-align: right; font: 400 15px/1.3 "Courier Prime", monospace; color: var(--muted); font-variant-numeric: tabular-nums; }
-.note b { color: var(--typed); font-weight: 700; }
-.note.err { text-align: left; font-weight: 700; color: var(--red); }
+main { position: relative; z-index: 1; }
+.view[hidden] { display: none; }
+h2.h { font-size: 30px; font-weight: 500; letter-spacing: -.005em; margin: 6px 0 14px; line-height: 1.1; }
+.label { display: block; font-size: 18px; color: var(--ink-soft); margin: 0 0 10px; }
 
-.verdict { position: relative; text-align: center; padding: 0 18px; flex: none; }
-.well { position: relative; height: 142px; margin: 0 auto; width: 82%; }
-.stamp {
-  position: absolute; left: 50%; top: 50%; width: 100%; height: auto; transform: translate(-50%, -50%);
-  mix-blend-mode: multiply; opacity: 0; visibility: hidden; pointer-events: none; user-select: none;
+/* ---------- minimum chips ---------- */
+.chips { display: flex; gap: 8px; margin-bottom: 26px; flex-wrap: wrap; }
+.chip {
+  min-width: 72px; height: 46px; padding: 0 14px; border-radius: 999px; border: 1.25px solid var(--line);
+  background: rgba(255, 255, 255, .25); color: var(--ink); font-size: 18px; font-variant-numeric: tabular-nums;
+  transition: background .18s, border-color .18s, color .18s;
 }
-.office {
-  position: absolute; inset: 14px 10%; border: 1.5px dashed #c3c7d2; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center; text-align: center;
-  font: 500 13px/1.3 "Oswald", sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #6b7080;
-  transition: opacity .2s;
-}
-.verdict[data-state="eligible"] .office, .verdict[data-state="shortage"] .office { opacity: 0; visibility: hidden; }
-.verdict[data-state="eligible"] .stamp.ok, .verdict[data-state="shortage"] .stamp.no { opacity: 1; visibility: visible; }
+.chip[aria-checked="true"] { background: var(--chip); border-color: var(--chip); color: #fff; }
+.chip.other { min-width: 0; font-style: italic; color: var(--ink-soft); }
+.chip.other[aria-checked="true"] { color: #fff; font-style: normal; }
+.custom-min { display: inline-flex; align-items: center; gap: 6px; height: 46px; padding: 0 14px; border-radius: 999px; border: 1.25px solid var(--chip); }
+.custom-min input { width: 3.2ch; border: 0; background: none; font-size: 18px; text-align: right; caret-color: var(--chip); }
 
-.big {
-  margin: 0; font-family: "Archivo Black", "Arial Black", sans-serif; font-weight: 400; color: var(--carbon);
-  font-size: clamp(96px, 34vw, 150px); line-height: .92; letter-spacing: -.02em; font-variant-numeric: tabular-nums;
-  -webkit-mask: url("assets/ink.png") 0 0 / 256px 256px repeat; mask: url("assets/ink.png") 0 0 / 256px 256px repeat;
+/* ---------- subject rows ---------- */
+.subjects { list-style: none; margin: 0 0 18px; padding: 0; display: grid; gap: 14px; }
+.subject {
+  width: 100%; display: grid; grid-template-columns: 1fr auto 18px; align-items: center; gap: 12px; text-align: left;
+  padding: 14px 12px 14px 16px; min-height: 76px; border: 1.25px solid var(--line); border-radius: 9px;
+  background: rgba(255, 255, 255, .22); color: var(--ink); transition: background .15s, transform .12s;
 }
-.verdict[data-state="empty"] .big { color: #cfd2db; }
-.what { margin: 6px 0 0; font: 400 clamp(16px, 5.1vw, 22px)/1.25 "Courier Prime", monospace; color: var(--carbon); }
-.math { margin: 10px 0 0; min-height: 22px; font: 400 clamp(15px, 4.4vw, 18px)/1.3 "Courier Prime", monospace; color: var(--typed); font-variant-numeric: tabular-nums; }
+.subject:hover { background: rgba(255, 255, 255, .5); }
+.subject:active { transform: scale(.995); }
+.subject .name { display: block; font-size: 22px; font-weight: 500; line-height: 1.15; overflow-wrap: anywhere; }
+.subject .meta { display: block; font-size: 17px; color: var(--ink-soft); margin-top: 3px; font-variant-numeric: tabular-nums; }
+.subject .chev { width: 18px; height: 18px; color: var(--ink); }
+.tag {
+  justify-self: end; white-space: nowrap; padding: 6px 12px 5px; border-radius: 7px; border: 1.25px solid;
+  font-size: 14px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; font-variant-numeric: tabular-nums;
+}
+.tag.skip { color: var(--green); background: var(--green-bg); border-color: var(--green-line); }
+.tag.attend { color: var(--red); background: var(--red-bg); border-color: var(--red-line); }
+.tag.line { color: var(--amber); background: var(--amber-bg); border-color: var(--amber-line); }
+.tag.none { color: var(--pencil); background: transparent; border-color: var(--line); }
 
-.again {
-  display: block; width: calc(100% - 2 * clamp(18px, 7vw, 30px)); margin: 22px auto 24px; height: 52px; border: 0; border-radius: 6px; cursor: pointer;
-  background: var(--plate); color: #fff; font: 700 21px/1 "Oswald", sans-serif; letter-spacing: .1em; text-transform: uppercase;
-  position: relative; -webkit-tap-highlight-color: transparent; transition: transform .12s ease-out, background-color .2s;
-}
-.again::after { /* rubber-plate grain on the black */
-  content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--paper); pointer-events: none;
-  -webkit-mask: url("assets/ink.png") 0 0 / 256px 256px repeat, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
-  mask: url("assets/ink.png") 0 0 / 256px 256px repeat, linear-gradient(#000 0 0); mask-composite: exclude; opacity: .3;
-}
-@media (hover: hover) { .again:hover { background: #28282C; } }
-.again:active { transform: translateY(1px) scale(.995); }
-.again:focus-visible { outline: 2.5px dashed var(--violet); outline-offset: 4px; }
+.empty { margin: 4px 0 16px; font-style: italic; color: var(--ink-soft); }
+.linkish { border: 0; background: none; padding: 0; color: var(--chip); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; font-style: italic; }
 
-.perf {
-  position: relative; height: 18px; margin: auto 0 0;
-  background: radial-gradient(circle, #c4c8d2 1.6px, transparent 2px) 0 50% / 12px 12px repeat-x;
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 54px; padding: 0 18px;
+  border-radius: 9px; border: 1.5px solid var(--chip); background: transparent; color: var(--ink); font-size: 19px;
+  transition: background .15s, transform .12s;
 }
-.perf::before, .perf::after { content: ""; position: absolute; top: 50%; width: 18px; height: 18px; margin-top: -9px; border-radius: 50%; background: var(--desk); }
-.perf::before { left: -9px; } .perf::after { right: -9px; }
-footer { text-align: center; padding: 16px 18px 0; font: 400 14px/1.4 "Courier Prime", monospace; color: var(--typed); }
-footer .sig { display: block; width: 46%; margin: 0 auto 8px; border-top: 1.2px solid var(--typed); }
-footer a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
-@media (hover: hover) { footer a:hover { color: var(--violet); } }
-footer a:focus-visible { outline: 2px dashed var(--violet); outline-offset: 3px; }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.btn:hover { background: rgba(63, 90, 128, .06); }
+.btn:active { transform: scale(.99); }
+.btn svg { width: 18px; height: 18px; }
+.btn.solid { background: var(--chip); color: #fff; }
+.btn.solid:hover { background: #35506F; }
+.btn.green { border-color: var(--green-line); color: var(--green); }
+.btn.red { border-color: var(--red-line); color: var(--red); }
+.btn.quiet { border-color: var(--line); }
 
-/* the signature moment: the stamp comes down on the sheet */
-.slam .stamp { animation: slam .34s cubic-bezier(.2, .8, .25, 1) both; }
-.ticket.thud { animation: thud .22s .2s ease-out both; }
-@keyframes slam {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.75) rotate(-9deg); filter: blur(3px); }
-  62% { opacity: 1; transform: translate(-50%, -50%) scale(.97) rotate(1deg); filter: blur(0); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0); filter: blur(0); }
+/* ---------- add / edit form ---------- */
+.form { border: 1.25px solid var(--chip); border-radius: 9px; padding: 14px 14px 16px; background: rgba(255, 255, 255, .35); margin-bottom: 18px; }
+.form[hidden] { display: none; }
+.form .row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.field { display: block; margin-bottom: 12px; }
+.field .lab { display: block; font-size: 16px; color: var(--ink-soft); margin-bottom: 4px; }
+.input {
+  display: flex; align-items: center; height: 52px; padding: 0 14px; border: 1.25px solid var(--line); border-radius: 9px; background: rgba(255, 255, 255, .45);
 }
-@keyframes thud { 0% { transform: translateY(0); } 35% { transform: translateY(2.5px); } 100% { transform: translateY(0); } }
-.verdict:not(.slam) .stamp { transition: opacity .15s; }
+.input:focus-within { border-color: var(--chip); background: rgba(255, 255, 255, .7); }
+.input input { flex: 1; width: 100%; min-width: 0; border: 0; background: none; font-size: 21px; caret-color: var(--chip); font-variant-numeric: tabular-nums; }
+.input input::placeholder { color: #9AA1B1; }
+#fee { font-variant-numeric: proportional-nums; letter-spacing: 0; }
+.input .unit { flex: none; font-size: 16px; color: var(--ink-soft); padding-left: 10px; }
+.form .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.error { min-height: 22px; margin: 2px 0 8px; color: var(--red); font-size: 16px; font-style: italic; }
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
 
-@media (min-width: 480px) {
-  body { background: var(--desk); padding: 28px 0; }
-  .ticket { min-height: auto; align-self: flex-start; border-radius: 4px; box-shadow: 0 30px 70px rgba(0, 0, 0, .45), 0 4px 10px rgba(0, 0, 0, .3); }
+.more { display: grid; gap: 12px; margin-top: 26px; }
+.cost-link { display: flex; justify-content: space-between; align-items: center; padding: 12px 2px; border: 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: none; text-align: left; font-size: 19px; font-style: italic; color: var(--ink); }
+.cost-link svg { width: 18px; height: 18px; flex: none; }
+footer { margin-top: 34px; font-size: 15px; line-height: 1.6; color: var(--ink-soft); }
+footer a { color: var(--ink-soft); text-underline-offset: 3px; }
+footer .sig { font-family: var(--hand); font-size: 19px; color: var(--ink); }
+
+/* ---------- subject detail ---------- */
+.verdict { text-align: center; padding-top: 6px; }
+.numeral-wrap { position: relative; display: inline-block; padding: 0 46px; }
+.numeral { font-family: var(--display); font-size: clamp(118px, 38vw, 166px); line-height: .9; color: var(--green); font-variant-numeric: lining-nums; letter-spacing: -.02em; }
+.numeral.red { color: var(--red); }
+.numeral.amber { color: var(--amber); }
+.rays { position: absolute; inset: -6% 0 0; width: 100%; height: 100%; color: currentColor; overflow: visible; pointer-events: none; }
+.rays path { stroke: currentColor; stroke-width: 3.2; stroke-linecap: round; fill: none; }
+.caption { font-style: italic; font-size: 23px; margin: 6px 0 8px; color: var(--ink); }
+.proof { font-size: 21px; font-variant-numeric: proportional-nums; margin: 0 0 14px; color: var(--ink); }
+.meter { position: relative; height: 10px; border-radius: 6px; background: var(--track); margin: 0 4px 6px; }
+.meter i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; background: var(--green); }
+.meter i.red { background: var(--red); }
+.meter i.amber { background: var(--amber); }
+.meter b { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--ink); border-radius: 1px; }
+.meter-legend { display: flex; justify-content: space-between; font-size: 15px; color: var(--ink-soft); margin: 0 4px 22px; font-variant-numeric: tabular-nums; }
+.log { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 26px; }
+.log .btn { font-size: 17px; white-space: nowrap; padding: 0 10px; }
+
+.register { margin: 0 -4px 6px; border-collapse: collapse; width: calc(100% + 8px); font-family: var(--hand); font-size: 18px; table-layout: fixed; }
+.register th, .register td { border: 1px solid #A9BBD0; text-align: center; height: 31px; padding: 0; }
+.register thead th { font-family: var(--serif); font-weight: 400; color: var(--ink-soft); font-size: 14px; }
+.register th.no { width: 54px; font-family: var(--serif); font-weight: 400; font-size: 14px; color: var(--ink-soft); }
+.register .P { color: var(--green); }
+.register .A { color: var(--red); }
+.register .future { color: var(--pencil); background: repeating-linear-gradient(135deg, transparent 0 5px, rgba(126, 133, 151, .12) 5px 6px); }
+.register .blank { color: transparent; }
+.register-note { font-size: 15px; font-style: italic; color: var(--ink-soft); margin: 8px 0 24px; }
+.edit-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.danger { color: var(--red); }
+
+/* ---------- cost ---------- */
+.cost-fields .field { margin-bottom: 18px; }
+.cost-fields .field .lab { font-size: 18px; color: var(--ink); margin-bottom: 8px; }
+.divider { display: flex; align-items: center; gap: 12px; margin: 26px 0 6px; color: var(--ink); font-style: italic; font-size: 21px; justify-content: center; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+.rupees { text-align: center; font-family: var(--display); font-size: clamp(72px, 22vw, 96px); line-height: 1; color: var(--green); margin: 8px 0 2px; font-variant-numeric: lining-nums; }
+.per { text-align: center; font-style: italic; font-size: 20px; margin: 0 0 22px; }
+.swash { position: relative; display: block; width: fit-content; margin: 8px auto 10px; padding: 8px 26px 6px; font-family: var(--hand); font-size: 25px; color: var(--red); white-space: nowrap; }
+.swash svg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; color: var(--highlight); }
+.swash-wrap { position: relative; z-index: 0; border-top: 1px solid var(--line); padding-top: 18px; margin-top: 4px; }
+.cost-note { text-align: center; font-size: 17px; font-style: italic; color: var(--ink-soft); margin: 6px 0 0; }
+
+/* ---------- toast ---------- */
+.toast {
+  position: fixed; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translate(-50%, 140%);
+  display: flex; align-items: center; gap: 16px; padding: 12px 16px 12px 18px; border-radius: 10px;
+  background: var(--ink); color: #F2EEE5; font-size: 17px; box-shadow: 0 10px 30px rgba(30, 43, 79, .3);
+  transition: transform .28s cubic-bezier(.2, .8, .25, 1); z-index: 10; max-width: calc(100vw - 32px);
 }
-@media (max-width: 479px) { .perf::before, .perf::after { display: none; } }
-@media (max-height: 780px) {
-  .band { height: 86px; background-position: center bottom; } .sheet { margin-top: 14px; } .well { height: 100px; width: 68%; }
-  .big { font-size: clamp(88px, 30vw, 124px); } .math { margin-top: 6px; } .again { margin-top: 14px; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .slam .stamp, .ticket.thud { animation: none; }
+.toast.on { transform: translate(-50%, 0); }
+.toast button { border: 0; background: none; color: #F7C9C2; text-decoration: underline; text-underline-offset: 3px; padding: 4px; }
+
+/* the one authored moment: the verdict is written in */
+@media (prefers-reduced-motion: no-preference) {
+  .verdict.writing .rays path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: draw .32s cubic-bezier(.2, .8, .25, 1) forwards; }
+  .verdict.writing .rays path:nth-child(2) { animation-delay: .05s; }
+  .verdict.writing .rays path:nth-child(3) { animation-delay: .1s; }
+  .verdict.writing .rays path:nth-child(4) { animation-delay: .15s; }
+  .verdict.writing .rays path:nth-child(5) { animation-delay: .2s; }
+  .verdict.writing .rays path:nth-child(6) { animation-delay: .25s; }
+  .verdict.writing .numeral { animation: ink .5s cubic-bezier(.2, .8, .25, 1) both; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes ink { from { opacity: 0; filter: blur(3px); transform: translateY(6px) scale(.97); } to { opacity: 1; filter: blur(0); transform: none; } }
 }
 </style>
 </head>
 <body>
 <!--
-THESIS: an attendance check that looks like the hall ticket the 75% rule decides; it refuses the soft card-and-stepper calculator.
-OWN-WORLD: white security paper, pink/blue guilloche band, navy condensed print, ruled form boxes, typewritten values, violet ELIGIBLE / red SHORTAGE rubber stamps, carbon-inked numerals, black rubber-plate button, perforated stub.
-STORY: a student types attended and held, the office stamps the verdict, the big number says how many to skip or attend in a row, the typed line proves the maths.
-FIRST VIEWPORT: band, title, the 3-row form, current % typed under it, stamp well, the number, the typed proof line, CHECK AGAIN, the stub; all on one phone screen.
-FORM: hall ticket, candidate 5 of 7; seed d41897ed. Comp: .impeccable/mocks/decision/hallticket.png (+ hallticket_shortage.png).
+THESIS: your attendance, written into the register you already know; the answer is the big inked number, not a dashboard of cards.
+OWN-WORLD: warm ruled register paper, a pale red margin line, navy Caslon print, green and red register ink, handwritten P/A marks (Kalam), a navy ribbon bookmark, a pink highlighter swash.
+STORY: a student sees every subject's verdict at once (SKIP 8 / ATTEND 12), taps one to see the number written large, logs today's class in one tap, then checks what a bunk costs and sends the link to the friend at 74%.
+FIRST VIEWPORT: wordmark + ribbon, "Your subjects", the 75/80/85 chips, the subject rows with their stamped tags, "+ Add subject" below.
+FORM: pinned by the user on 12 Nov 2026 (concept B, attendance register, builds/ui-concepts/bunk/bunk_b_register.png); no roll.
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 -->
-<main class="ticket" id="ticket">
-  <div class="band" aria-hidden="true"></div>
-  <header>
-    <h1>Bunk calculator</h1>
-    <p class="sub">Hall ticket · Attendance check</p>
-  </header>
+<div class="sheet">
+  <svg class="ribbon" viewBox="0 0 18 46" aria-hidden="true"><path d="M0 0h18v46l-9-7-9 7z" fill="currentColor"/></svg>
 
-  <form class="sheet" id="sheet" autocomplete="off" novalidate>
-    <div class="form">
-      <div class="row"><label for="a">Classes attended</label><input id="a" name="a" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="36" enterkeyhint="next"></div>
-      <div class="row"><label for="t">Classes held</label><input id="t" name="t" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="40" enterkeyhint="next"></div>
-      <div class="row"><label for="m">Minimum %</label><input id="m" name="m" type="text" inputmode="decimal" maxlength="5" value="75" enterkeyhint="done"></div>
-    </div>
-    <p class="note" id="note" role="status"></p>
-  </form>
+  <header class="top" id="top"></header>
 
-  <section class="verdict" id="verdict" data-state="empty">
-    <div class="well">
-      <div class="office">For office use only</div>
-      <img class="stamp ok" src="assets/stamp-eligible.png" alt="Eligible" width="620" height="279">
-      <img class="stamp no" src="assets/stamp-shortage.png" alt="Shortage" width="621" height="279">
-    </div>
-    <p class="big" id="n">?</p>
-    <p class="what" id="what">fill in the form above</p>
-    <p class="math" id="math"></p>
-  </section>
+  <main>
+    <!-- subjects -->
+    <section class="view" id="v-home" aria-labelledby="h-home">
+      <h2 class="h" id="h-home">Your subjects</h2>
+      <span class="label" id="min-label">Minimum attendance</span>
+      <div class="chips" role="radiogroup" aria-labelledby="min-label" id="chips"></div>
 
-  <button class="again" id="again" type="button">Check again</button>
-  <div class="perf" aria-hidden="true"></div>
-  <footer>
-    <span class="sig" aria-hidden="true"></span>
-    made by <a href="https://www.instagram.com/souradip.sh/">@souradip.sh</a>
-  </footer>
-  <p id="say" class="sr" role="status"></p>
-</main>
+      <ul class="subjects" id="list"></ul>
+      <p class="empty" id="empty" hidden>No subjects yet. Add one, or <button class="linkish" id="example" type="button">fill in an example</button>.</p>
+
+      <form class="form" id="add-form" hidden novalidate>
+        <label class="field"><span class="lab">Subject</span><span class="input"><input id="add-name" autocomplete="off" maxlength="40" placeholder="DBMS" enterkeyhint="next"></span></label>
+        <div class="row">
+          <label class="field"><span class="lab">Attended</span><span class="input"><input id="add-a" type="number" inputmode="numeric" min="0" placeholder="36" enterkeyhint="next"></span></label>
+          <label class="field"><span class="lab">Held</span><span class="input"><input id="add-t" type="number" inputmode="numeric" min="0" placeholder="40" enterkeyhint="done"></span></label>
+        </div>
+        <p class="error" id="add-error" role="alert"></p>
+        <div class="actions">
+          <button class="btn quiet" type="button" id="add-cancel">Cancel</button>
+          <button class="btn solid" type="submit">Add</button>
+        </div>
+      </form>
+      <button class="btn" type="button" id="add-open"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 3v12M3 9h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>Add subject</button>
+
+      <div class="more">
+        <button class="cost-link" type="button" data-go="#/cost"><span>What does one bunk cost you?</span><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M7 4l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></button>
+        <button class="btn quiet" type="button" id="share"><svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 11V2.5M5.5 6 9 2.5 12.5 6M3.5 9.5v5h11v-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>Send to the friend at 74%</button>
+      </div>
+
+      <footer>
+        <span class="sig">— @souradip.sh</span><br>
+        Free, no login. Your numbers stay on this phone.<br>
+        <a href="https://github.com/Souradip121/bunk">Open source on GitHub</a> · <a href="v1/">the old one</a><br>
+        Use it responsibly. Or don't.
+      </footer>
+    </section>
+
+    <!-- one subject -->
+    <section class="view" id="v-subject" hidden aria-live="polite">
+      <div class="verdict" id="verdict">
+        <div class="numeral-wrap">
+          <svg class="rays" id="rays" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M10 30 L18 36"/><path d="M4 52 L15 51"/><path d="M10 72 L18 66"/>
+            <path d="M90 30 L82 36"/><path d="M96 52 L85 51"/><path d="M90 72 L82 66"/>
+          </svg>
+          <div class="numeral" id="numeral">0</div>
+        </div>
+        <p class="caption" id="caption"></p>
+        <p class="proof" id="proof"></p>
+      </div>
+      <div class="meter" aria-hidden="true"><i id="meter-fill"></i><b id="meter-min"></b></div>
+      <div class="meter-legend"><span id="legend-now"></span><span id="legend-min"></span></div>
+
+      <div class="log">
+        <button class="btn green" type="button" id="log-p">Present today</button>
+        <button class="btn red" type="button" id="log-a">Bunked today</button>
+      </div>
+
+      <table class="register" id="register" aria-describedby="register-note"></table>
+      <p class="register-note" id="register-note"></p>
+
+      <form class="form" id="edit-form" hidden novalidate>
+        <label class="field"><span class="lab">Subject</span><span class="input"><input id="edit-name" autocomplete="off" maxlength="40"></span></label>
+        <div class="row">
+          <label class="field"><span class="lab">Attended</span><span class="input"><input id="edit-a" type="number" inputmode="numeric" min="0"></span></label>
+          <label class="field"><span class="lab">Held</span><span class="input"><input id="edit-t" type="number" inputmode="numeric" min="0"></span></label>
+        </div>
+        <p class="error" id="edit-error" role="alert"></p>
+        <div class="actions">
+          <button class="btn quiet" type="button" id="edit-cancel">Cancel</button>
+          <button class="btn solid" type="submit">Save</button>
+        </div>
+      </form>
+      <div class="edit-row" id="edit-row">
+        <button class="linkish" type="button" id="edit-open">Edit numbers</button>
+        <button class="linkish danger" type="button" id="delete">Remove subject</button>
+      </div>
+    </section>
+
+    <!-- what a bunk costs -->
+    <section class="view" id="v-cost" hidden>
+      <form class="cost-fields" id="cost-form" novalidate>
+        <label class="field"><span class="lab">Annual college fees</span><span class="input"><input id="fee" inputmode="numeric" autocomplete="off" placeholder="₹2,00,000"><span class="unit">a year</span></span></label>
+        <label class="field"><span class="lab">Classes per week</span><span class="input"><input id="perweek" type="number" inputmode="numeric" min="1" placeholder="30"><span class="unit">a week</span></span></label>
+        <label class="field"><span class="lab">Academic weeks</span><span class="input"><input id="weeks" type="number" inputmode="numeric" min="1" placeholder="32"><span class="unit">weeks a year</span></span></label>
+      </form>
+      <div class="divider">Cost per lecture</div>
+      <div class="rupees" id="rupees">₹0</div>
+      <p class="per">per lecture</p>
+      <div class="swash-wrap" id="swash-wrap">
+        <span class="swash" id="swash"><svg viewBox="0 0 300 50" preserveAspectRatio="none" aria-hidden="true"><path d="M6 12 C40 4 120 9 170 6 S270 3 296 9 L292 22 L298 38 C250 46 160 41 110 45 S30 48 4 42 L9 28 Z" fill="currentColor"/></svg><span id="swash-text"></span></span>
+        <p class="cost-note" id="cost-note"></p>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"><span id="toast-text"></span><button type="button" id="toast-undo">Undo</button></div>
 
 <script>
 (() => {
+  "use strict";
+  const KEY = "bunk.v2";
+  const MINS = [75, 80, 85];
+  const SITE = "https://souradip121.github.io/bunk/";
   const $ = (id) => document.getElementById(id);
-  const A = $("a"), T = $("t"), M = $("m"), note = $("note");
-  let errText = "";
-  const err = { set textContent(v) { errText = v; } };
-  const V = $("verdict"), N = $("n"), what = $("what"), math = $("math"), ticket = $("ticket"), again = $("again"), say = $("say");
-  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const pct = (x) => (Math.floor(x * 1000 + 1e-9) / 10).toFixed(1) + "%";   // never rounds up past the line
-  const q = new URLSearchParams(location.search), fromQ = q.has("a") || q.has("t");
-  let last = "", counter = 0, timer = 0, userEdited = false;
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const store = {
-    get() { try { return JSON.parse(localStorage.getItem("bunk") || "{}") || {}; } catch (e) { return {}; } },
-    set(v) { try { localStorage.setItem("bunk", JSON.stringify(v)); } catch (e) {} },
-  };
-
-  function verdict() {
-    const a = A.value.trim(), t = T.value.trim(), mRaw = M.value.trim();
-    err.textContent = "";
-    const ai = Number(a), ti = Number(t), m = Number(mRaw);
-    const ok = (s) => /^\d+$/.test(s);
-    if (!a || !t || !ok(a) || !ok(t) || ti === 0) {
-      if ((a && !ok(a)) || (t && !ok(t))) err.textContent = "Whole numbers only.";
-      else if (t && ti === 0) err.textContent = "Classes held can't be 0.";
-      return { state: "empty" };
-    }
-    if (ai > ti) { err.textContent = "Attended can't be more than held."; return { state: "empty" }; }
-    if (!(m > 0 && m <= 100)) { err.textContent = "Minimum should be between 1 and 100."; return { state: "empty", cur: ai / ti }; }
-    const cur = ai / ti;
-    if (100 * ai >= m * ti) {                          // at or above the line: how many can you skip?
-      const n = Math.floor((100 * ai - m * ti) / m + 1e-9);
-      return { state: "eligible", n, cur, line: n > 0 ? `${ai} / ${ti + n} = ${pct(ai / (ti + n))}` : `skip one → ${ai} / ${ti + 1} = ${pct(ai / (ti + 1))}` };
-    }
-    if (m >= 100) return { state: "shortage", n: null, cur };   // 100% can never be won back
-    const n = Math.ceil((m * ti - 100 * ai) / (100 - m) - 1e-9);   // below the line: attend n in a row
-    return { state: "shortage", n, cur, line: `${ai + n} / ${ti + n} = ${pct((ai + n) / (ti + n))}` };
-  }
-
-  function countTo(n) {
-    cancelAnimationFrame(counter);
-    if (reduce || n < 2) { N.textContent = n; return; }
-    const t0 = performance.now(), d = Math.min(520, 260 + n * 12);
-    const step = (t) => {
-      const k = Math.min(1, (t - t0) / d), e = 1 - Math.pow(1 - k, 3);
-      N.textContent = Math.round(e * n);
-      if (k < 1) counter = requestAnimationFrame(step);
-    };
-    counter = requestAnimationFrame(step);
-  }
-
-  function render() {
-    cancelAnimationFrame(counter);
-    const r = verdict();
-    note.classList.toggle("err", !!errText);
-    note.setAttribute("role", errText ? "alert" : "status");
-    if (errText) note.textContent = errText;
-    else note.innerHTML = r.cur != null ? `you're at <b>${pct(r.cur)}</b>` : "";
-    const key = r.state + ":" + r.n;
-    V.dataset.state = r.state;
-    if (r.state === "empty") {
-      N.textContent = "?"; N.style.fontSize = ""; what.textContent = "fill in the form above"; math.textContent = ""; again.textContent = "Check";
-      say.textContent = ""; last = key; return;
-    }
-    if (r.state === "eligible") {
-      what.textContent = r.n === 0 ? "classes you can skip. Don't miss the next one." : (r.n === 1 ? "more class you can skip" : "more classes you can skip");
-    } else if (r.n === null) {
-      what.textContent = "You can't get back to 100%. Talk to your HOD.";
-    } else {
-      what.textContent = r.n === 1 ? "class in a row to get back" : "classes in a row to get back";
-    }
-    math.textContent = r.line || "";
-    again.textContent = "Check again";
-    if (key !== last) {
-      N.style.fontSize = String(r.n ?? "").length > 3 ? "clamp(64px, 22vw, 100px)" : "";
-      r.n === null ? (N.textContent = "?") : countTo(r.n);
-      if (!reduce) {
-        V.classList.remove("slam"); ticket.classList.remove("thud");
-        void V.offsetWidth;
-        V.classList.add("slam"); ticket.classList.add("thud");
+  // ---------------- state ----------------
+  const defaults = { min: 75, subjects: [], fee: 200000, perWeek: 30, weeks: 32 };
+  let S = load();
+  function load() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(KEY) || "null");
+      if (raw && Array.isArray(raw.subjects)) return Object.assign({}, defaults, raw);
+      // carry over v1's last numbers ({a, t, m} as strings) if they exist
+      const v1 = JSON.parse(localStorage.getItem("bunk") || "null");
+      if (v1 && v1.t !== "" && +v1.t > 0 && +v1.a >= 0 && +v1.a <= +v1.t) {
+        const m = Math.round(+v1.m) || 75;
+        return Object.assign({}, defaults, { min: m >= 1 && m <= 100 ? m : 75, subjects: [{ id: uid(), name: "My subject", a: Math.round(+v1.a), t: Math.round(+v1.t) }] });
       }
-    } else if (r.n !== null) N.textContent = r.n;
-    last = key;
-    say.textContent = `${r.state === "eligible" ? "Eligible" : "Shortage"}. ${r.n ?? ""} ${what.textContent.replace(/\.$/, "")}. ${math.textContent}`;
-    if (!fromQ || userEdited) store.set({ a: A.value, t: T.value, m: M.value });
+    } catch (e) { /* private mode or bad data: start fresh */ }
+    return JSON.parse(JSON.stringify(defaults));
+  }
+  function save() {
+    // a subject opened from a shared link (?a=36&t=40&m=75, v1's format) is shown but never saved unless it's edited
+    try { localStorage.setItem(KEY, JSON.stringify(Object.assign({}, S, { subjects: S.subjects.filter((s) => !s.transient) }))); } catch (e) { /* storage blocked: still works for this visit */ }
+  }
+  const q = new URLSearchParams(location.search);
+  const EXAMPLE = [["d1", "DBMS", 36, 40], ["d2", "Maths", 27, 40], ["d3", "OS", 30, 38]];
+  if (q.has("demo")) { // ?demo shows the reel's example without touching what this phone saved
+    S.subjects = EXAMPLE.map(([id, name, a, t]) => ({ id, name, a, t, transient: true })); S.min = 75;
+  }
+  if (q.has("a") && q.has("t")) {
+    const a = Math.round(+q.get("a")), t = Math.round(+q.get("t")), m = Math.round(+q.get("m"));
+    if (t > 0 && a >= 0 && a <= t) {
+      const s = { id: "link", name: "From the link", a, t, transient: true };
+      S.subjects = S.subjects.filter((x) => x.id !== "link").concat(s);
+      let fresh = true; try { fresh = !localStorage.getItem(KEY); } catch (e) { /* storage blocked */ }
+      if (m >= 1 && m <= 100 && fresh) S.min = m;
+      if (!location.hash) location.hash = "#/s/link";
+    }
+  }
+  function uid() { return Math.random().toString(36).slice(2, 9); }
+
+  // ---------------- the maths ----------------
+  // a attended of t held, minimum m%. skip: largest n with 100a >= m(t+n). recover: smallest n with 100(a+n) >= m(t+n).
+  function verdict(a, t, m) {
+    if (!(t > 0)) return { kind: "none" };
+    if (a > t) return { kind: "bad" };
+    if (100 * a >= m * t) {
+      const n = Math.floor((100 * a - m * t) / m);
+      return n > 0 ? { kind: "skip", n, a2: a, t2: t + n } : { kind: "line", n: 0, a2: a, t2: t + 1 };
+    }
+    if (m >= 100) return { kind: "never" };
+    const n = Math.ceil((m * t - 100 * a) / (100 - m));
+    return { kind: "attend", n, a2: a + n, t2: t + n };
+  }
+  const floorPct = (a, t) => Math.floor((a / t) * 1000) / 10;
+  const pctShort = (a, t) => { const p = floorPct(a, t); return (p % 1 === 0 ? p.toFixed(0) : p.toFixed(1)) + "%"; };
+  const pctLong = (a, t) => floorPct(a, t).toFixed(1) + "%";
+  const inr = (n) => "₹" + Math.round(n).toLocaleString("en-IN");
+
+  function tagFor(v) {
+    if (v.kind === "skip") return ["skip", "Skip " + v.n];
+    if (v.kind === "attend") return ["attend", "Attend " + v.n];
+    if (v.kind === "line") return ["line", "On the line"];
+    if (v.kind === "never") return ["attend", "Can't recover"];
+    return ["none", "Add classes"];
   }
 
-  const soon = () => { clearTimeout(timer); timer = setTimeout(render, 280); };
-  [A, T, M].forEach((el) => {
-    el.addEventListener("input", () => { userEdited = true; el.value = el.value.replace(el === M ? /[^\d.]/g : /\D/g, ""); soon(); });
-    el.addEventListener("keydown", (e) => {
-      if (e.key !== "Enter") return;
-      e.preventDefault(); clearTimeout(timer); render();
-      ({ a: T, t: M, m: null })[el.id]?.focus() ?? el.blur();
-    });
-  });
-  $("sheet").addEventListener("submit", (e) => { e.preventDefault(); render(); });
-  again.addEventListener("click", () => {
-    clearTimeout(timer);
-    if (V.dataset.state === "empty") {          // "Check": stamp what is there, or point at the missing box
-      render();
-      if (V.dataset.state === "empty") ([A, T].find((el) => !el.value) || A).focus();
-      return;
-    }
-    A.value = ""; T.value = ""; userEdited = true; store.set({ m: M.value }); render(); A.focus();   // "Check again": a clean form
-  });
-  ticket.addEventListener("animationend", (e) => { if (e.animationName === "thud") ticket.classList.remove("thud"); });
+  // ---------------- header ----------------
+  const icon = {
+    back: '<svg viewBox="0 0 22 22" aria-hidden="true"><path d="M18 11H4M10 5l-6 6 6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+    chev: '<svg class="chev" viewBox="0 0 18 18" aria-hidden="true"><path d="M7 4l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>'
+  };
+  function header(title) {
+    const top = $("top");
+    if (!title) { top.innerHTML = '<h1 class="wordmark">bunk</h1>'; return; }
+    top.innerHTML = '<button class="back" type="button" aria-label="Back to your subjects">' + icon.back + '</button><h1 class="title"></h1><span class="spacer"></span>';
+    top.querySelector(".title").textContent = title;
+    top.querySelector(".back").addEventListener("click", () => { location.hash = "#/"; });
+  }
 
-  // prefill: ?a=36&t=40&m=75 (shareable), else the last numbers on this phone
-  const src = fromQ ? Object.fromEntries(q) : store.get();   // a shared link never overwrites what this phone saved
-  A.value = String(src.a ?? "").replace(/\D/g, "").slice(0, 4);
-  T.value = String(src.t ?? "").replace(/\D/g, "").slice(0, 4);
-  M.value = String(src.m ?? "").replace(/[^\d.]/g, "").slice(0, 5) || "75";
-  last = "init"; render();
+  // ---------------- home ----------------
+  function renderChips() {
+    const box = $("chips"); box.innerHTML = "";
+    const custom = !MINS.includes(S.min);
+    MINS.forEach((m) => box.appendChild(chip(m + "%", S.min === m, () => setMin(m))));
+    if (custom) {
+      const wrap = document.createElement("label"); wrap.className = "custom-min";
+      wrap.innerHTML = '<span class="sr">Custom minimum</span><input type="number" inputmode="numeric" min="1" max="100" aria-label="Custom minimum percent">%';
+      const inp = wrap.querySelector("input"); inp.value = S.min;
+      inp.addEventListener("change", () => { const v = Math.round(+inp.value); if (v >= 1 && v <= 100) setMin(v, true); else inp.value = S.min; });
+      box.appendChild(wrap);
+    } else {
+      const o = chip("other", false, () => { S.min = 70; save(); renderHome(); const i = document.querySelector(".custom-min input"); if (i) { i.focus(); i.select(); } });
+      o.classList.add("other"); o.setAttribute("aria-label", "Other minimum"); box.appendChild(o);
+    }
+  }
+  function chip(text, on, fn) {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = text;
+    b.setAttribute("role", "radio"); b.setAttribute("aria-checked", String(on)); b.addEventListener("click", fn); return b;
+  }
+  function setMin(m, keepFocus) { S.min = m; save(); renderHome(); if (keepFocus) { const i = document.querySelector(".custom-min input"); if (i) i.focus(); } }
+
+  function renderHome() {
+    header(null);
+    renderChips();
+    const list = $("list"); list.innerHTML = "";
+    S.subjects.forEach((s) => {
+      const v = verdict(s.a, s.t, S.min); const [cls, label] = tagFor(v);
+      const li = document.createElement("li");
+      const b = document.createElement("button"); b.type = "button"; b.className = "subject";
+      b.innerHTML = '<span><span class="name"></span><span class="meta"></span></span><span class="tag ' + cls + '"></span>' + icon.chev;
+      b.querySelector(".name").textContent = s.name;
+      b.querySelector(".meta").textContent = s.t > 0 ? s.a + "/" + s.t + " · " + pctShort(s.a, s.t) : "no classes yet";
+      b.querySelector(".tag").textContent = label;
+      b.setAttribute("aria-label", s.name + ", " + (s.t > 0 ? s.a + " of " + s.t + ", " : "") + label);
+      b.addEventListener("click", () => { location.hash = "#/s/" + s.id; });
+      li.appendChild(b); list.appendChild(li);
+    });
+    const none = S.subjects.length === 0;
+    $("empty").hidden = !none;
+    if (none && $("add-form").hidden) openAdd(false);
+  }
+
+  function openAdd(focus = true) { $("add-form").hidden = false; $("add-open").hidden = true; $("add-error").textContent = ""; if (focus) $("add-name").focus(); }
+  function closeAdd() { $("add-form").reset(); $("add-form").hidden = S.subjects.length === 0 ? false : true; $("add-open").hidden = !$("add-form").hidden; }
+  $("add-open").addEventListener("click", () => openAdd());
+  $("add-cancel").addEventListener("click", closeAdd);
+  $("add-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = $("add-name").value.trim(), a = $("add-a").value, t = $("add-t").value;
+    const err = check(name, a, t);
+    if (err) { $("add-error").textContent = err; return; }
+    S.subjects.push({ id: uid(), name, a: +a, t: +t }); save();
+    $("add-form").reset(); $("add-form").hidden = true; $("add-open").hidden = false; renderHome();
+  });
+  [["add-name", "add-a"], ["add-a", "add-t"]].forEach(([from, to]) => $(from).addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); $(to).focus(); } }));
+  function check(name, a, t) {
+    if (!name) return "Give the subject a name.";
+    if (a === "" || t === "") return "Put in classes attended and held.";
+    if (!Number.isInteger(+a) || !Number.isInteger(+t) || +a < 0 || +t < 0) return "Whole numbers only.";
+    if (+a > +t) return "Attended can't be more than held.";
+    if (+t > 2000) return "That's a lot of classes. Check the number held.";
+    return "";
+  }
+  $("example").addEventListener("click", () => {
+    S.subjects = EXAMPLE.map(([, name, a, t]) => ({ id: uid(), name, a, t }));
+    S.min = 75; save(); $("add-form").reset(); $("add-form").hidden = true; $("add-open").hidden = false; renderHome();
+  });
+  document.querySelectorAll("[data-go]").forEach((b) => b.addEventListener("click", () => { location.hash = b.dataset.go; }));
+  $("share").addEventListener("click", async () => {
+    const data = { title: "bunk", text: "How many classes can you still bunk? Every subject at once:", url: SITE };
+    try { if (navigator.share) { await navigator.share(data); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+    try { await navigator.clipboard.writeText(SITE); toast("Link copied. Send it."); } catch (e) { toast(SITE); }
+  });
+
+  // ---------------- one subject ----------------
+  let current = null;
+  function renderSubject(id, animate) {
+    const s = S.subjects.find((x) => x.id === id);
+    if (!s) { location.replace("#/"); return; }
+    current = s; header(s.name);
+    const v = verdict(s.a, s.t, S.min);
+    const n = $("numeral"), cap = $("caption"), proof = $("proof"), ver = $("verdict");
+    n.className = "numeral"; $("rays").style.color = "";
+    let value = "", color = "green";
+    if (v.kind === "skip") { value = v.n; cap.textContent = v.n === 1 ? "more class you can skip" : "more classes you can skip"; proof.textContent = v.a2 + "/" + v.t2 + " = " + pctLong(v.a2, v.t2); }
+    else if (v.kind === "line") { value = 0; color = "amber"; cap.textContent = "classes you can skip. Don't miss the next one."; proof.textContent = "skip one → " + v.a2 + "/" + v.t2 + " = " + pctLong(v.a2, v.t2); }
+    else if (v.kind === "attend") { value = v.n; color = "red"; cap.textContent = v.n === 1 ? "class in a row to get back" : "classes in a row to get back"; proof.textContent = v.a2 + "/" + v.t2 + " = " + pctLong(v.a2, v.t2); }
+    else if (v.kind === "never") { value = "—"; color = "red"; cap.textContent = "You can't get back to 100%. Talk to your HOD."; proof.textContent = s.a + "/" + s.t + " = " + pctLong(s.a, s.t); }
+    else { value = "?"; color = "amber"; cap.textContent = "Log a class to start counting."; proof.textContent = ""; }
+    if (color !== "green") n.classList.add(color);
+    $("rays").style.color = getComputedStyle(n).color;
+    if (animate && !reduced && typeof value === "number" && value > 0) countUp(n, value); else n.textContent = String(value);
+    ver.classList.remove("writing"); if (animate) { void ver.offsetWidth; ver.classList.add("writing"); }
+    // meter
+    const now = s.t > 0 ? Math.min(100, (s.a / s.t) * 100) : 0;
+    const fill = $("meter-fill"); fill.style.width = now + "%"; fill.className = color === "green" ? "" : color;
+    $("meter-min").style.left = "calc(" + S.min + "% - 1px)";
+    $("legend-now").textContent = s.t > 0 ? "now " + pctLong(s.a, s.t) : "no classes yet";
+    $("legend-min").textContent = "minimum " + S.min + "%";
+    renderRegister(s, v);
+    $("edit-form").hidden = true; $("edit-row").hidden = false;
+  }
+  function countUp(el, to) {
+    const dur = Math.min(520, 260 + to * 12), t0 = performance.now();
+    const step = (t) => { const p = Math.min(1, (t - t0) / dur); el.textContent = String(Math.round(to * (1 - Math.pow(1 - p, 3)))); if (p < 1) requestAnimationFrame(step); };
+    el.textContent = "0"; requestAnimationFrame(step);
+  }
+
+  // the register: the counts are real, the order of the absences is made up (spread evenly, jittered by the subject's name)
+  function renderRegister(s, v) {
+    const tbl = $("register"); const cols = 10;
+    const absent = s.t - s.a;
+    const marks = new Array(s.t).fill("P");
+    if (absent > 0) {
+      let seed = 0; for (const c of s.name) seed = (seed * 31 + c.charCodeAt(0)) >>> 0;
+      const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+      const taken = new Set();
+      for (let i = 0; i < absent; i++) {
+        let pos = Math.floor(((i + 0.5 + (rnd() - 0.5) * 0.7) * s.t) / absent);
+        pos = Math.max(0, Math.min(s.t - 1, pos));
+        while (taken.has(pos)) pos = (pos + 1) % s.t;
+        taken.add(pos); marks[pos] = "A";
+      }
+    }
+    let future = [];
+    if (v.kind === "skip") future = new Array(v.n).fill("–");
+    if (v.kind === "attend") future = new Array(v.n).fill("P");
+    const shownFuture = future.slice(0, 30);
+    let html = '<caption class="sr">Register for ' + esc(s.name) + '</caption><thead><tr><th class="no" scope="col">No.</th>';
+    for (let c = 1; c <= cols; c++) html += '<th scope="col">' + c + "</th>";
+    html += "</tr></thead><tbody>";
+    const rows = Math.ceil(marks.length / cols);
+    for (let r = 0; r < rows; r++) {
+      html += '<tr><th class="no" scope="row">' + (r * cols + 1) + "</th>";
+      for (let c = 0; c < cols; c++) { const m = marks[r * cols + c]; html += m ? '<td class="' + m + '">' + m + "</td>" : '<td class="blank"></td>'; }
+      html += "</tr>";
+    }
+    if (shownFuture.length) {
+      const frows = Math.ceil(shownFuture.length / cols);
+      for (let r = 0; r < frows; r++) {
+        html += '<tr><th class="no" scope="row">' + (r === 0 ? "next" : "") + "</th>";
+        for (let c = 0; c < cols; c++) { const m = shownFuture[r * cols + c]; html += m ? '<td class="future">' + m + "</td>" : '<td class="blank"></td>'; }
+        html += "</tr>";
+      }
+    }
+    tbl.innerHTML = html + "</tbody>";
+    const extra = future.length - shownFuture.length;
+    let note = s.t ? "Your " + s.t + " classes: " + s.a + " present, " + absent + " absent. The order is made up; the counts are yours." : "";
+    if (v.kind === "skip") note += " The pencilled row is the " + v.n + " you can still skip" + (extra > 0 ? " (" + extra + " more not shown)" : "") + ".";
+    if (v.kind === "attend") note += " The pencilled row is the " + v.n + " you can't miss" + (extra > 0 ? " (" + extra + " more not shown)" : "") + ".";
+    $("register-note").textContent = note;
+  }
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  let undo = null;
+  function logClass(present) {
+    if (!current) return;
+    const before = { a: current.a, t: current.t };
+    current.t += 1; if (present) current.a += 1; delete current.transient; save(); renderSubject(current.id, false);
+    const s = current; undo = () => { s.a = before.a; s.t = before.t; save(); renderSubject(s.id, false); };
+    toast(present ? "Marked present." : "Marked absent. Hope it was worth it.", true);
+  }
+  $("log-p").addEventListener("click", () => logClass(true));
+  $("log-a").addEventListener("click", () => logClass(false));
+  $("edit-open").addEventListener("click", () => {
+    $("edit-name").value = current.name; $("edit-a").value = current.a; $("edit-t").value = current.t; $("edit-error").textContent = "";
+    $("edit-form").hidden = false; $("edit-row").hidden = true; $("edit-a").focus();
+  });
+  $("edit-cancel").addEventListener("click", () => { $("edit-form").hidden = true; $("edit-row").hidden = false; });
+  $("edit-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = $("edit-name").value.trim(), a = $("edit-a").value, t = $("edit-t").value;
+    const err = check(name, a, t); if (err) { $("edit-error").textContent = err; return; }
+    Object.assign(current, { name, a: +a, t: +t }); delete current.transient; save(); renderSubject(current.id, true);
+  });
+  $("delete").addEventListener("click", () => {
+    const s = current, idx = S.subjects.indexOf(s); if (idx < 0) return;
+    S.subjects.splice(idx, 1); save(); location.hash = "#/";
+    undo = () => { S.subjects.splice(idx, 0, s); save(); renderHome(); };
+    toast("Removed " + s.name + ".", true);
+  });
+
+  // ---------------- what a bunk costs ----------------
+  const digits = (v) => +String(v).replace(/[^\d]/g, "");
+  function renderCost(fromInput) {
+    header("What a bunk costs");
+    if (!fromInput) { $("fee").value = S.fee ? inr(S.fee) : ""; $("perweek").value = S.perWeek || ""; $("weeks").value = S.weeks || ""; }
+    const per = S.fee > 0 && S.perWeek > 0 && S.weeks > 0 ? S.fee / (S.perWeek * S.weeks) : 0;
+    $("rupees").textContent = inr(per);
+    const safe = S.subjects.reduce((sum, s) => { const v = verdict(s.a, s.t, S.min); return sum + (v.kind === "skip" ? v.n : 0); }, 0);
+    const missed = S.subjects.reduce((sum, s) => sum + Math.max(0, s.t - s.a), 0);
+    const wrap = $("swash-wrap");
+    if (!per) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    if (safe > 0) {
+      $("swash-text").textContent = safe + (safe === 1 ? " bunk = " : " bunks = ") + inr(safe * per);
+      $("cost-note").textContent = "That's the " + safe + " you can still skip across your subjects." + (missed ? " You've already bunked " + missed + ": " + inr(missed * per) + "." : "");
+    } else {
+      $("swash-text").textContent = "1 bunk = " + inr(per);
+      $("cost-note").textContent = S.subjects.length ? (missed ? "You've already bunked " + missed + " classes: " + inr(missed * per) + "." : "") : "Add your subjects to see what your safe bunks are worth.";
+    }
+  }
+  $("fee").addEventListener("input", (e) => {
+    const n = digits(e.target.value); S.fee = n; save();
+    const caretAtEnd = e.target.selectionStart === e.target.value.length;
+    e.target.value = n ? inr(n) : ""; if (caretAtEnd) e.target.setSelectionRange(e.target.value.length, e.target.value.length);
+    renderCost(true);
+  });
+  $("perweek").addEventListener("input", (e) => { S.perWeek = Math.max(0, Math.round(+e.target.value) || 0); save(); renderCost(true); });
+  $("weeks").addEventListener("input", (e) => { S.weeks = Math.max(0, Math.round(+e.target.value) || 0); save(); renderCost(true); });
+
+  // ---------------- toast ----------------
+  let toastTimer = null;
+  function toast(text, withUndo) {
+    $("toast-text").textContent = text; $("toast-undo").hidden = !withUndo; $("toast").classList.add("on");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { $("toast").classList.remove("on"); undo = null; }, 4200);
+  }
+  $("toast-undo").addEventListener("click", () => { if (undo) undo(); undo = null; $("toast").classList.remove("on"); });
+
+  // ---------------- routing ----------------
+  function route() {
+    const h = location.hash || "#/";
+    ["v-home", "v-subject", "v-cost"].forEach((id) => { $(id).hidden = true; });
+    if (h.startsWith("#/s/")) { $("v-subject").hidden = false; renderSubject(h.slice(4), true); }
+    else if (h === "#/cost") { $("v-cost").hidden = false; renderCost(false); }
+    else { $("v-home").hidden = false; renderHome(); }
+    window.scrollTo(0, 0);
+  }
+  addEventListener("hashchange", route);
+  route();
 })();
 </script>
 </body>
